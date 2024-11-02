@@ -14,7 +14,7 @@ class TestPasswordRecovery:
         self.email = random_user["email"]
         self.password = random_user["password"]
 
-    @allure.title('Проверка перехода на страницу забыл пароль')
+    @allure.title('Проверка перехода на страницу "забыл пароль"')
     def test_navigate_to_forgot_password(self, driver):
         login_page = LoginPage(driver)
         login_page.open("/login")
@@ -24,7 +24,7 @@ class TestPasswordRecovery:
         )
         assert "forgot-password" in driver.current_url
 
-    @allure.title('Проверка перехода на страницу восстановления пароля')
+    @allure.title('Проверка перехода на страницу "восстановления пароля"')
     def test_password_recovery(self, driver):
         forgot_page = ForgotPasswordPage(driver)
         forgot_page.open("/forgot-password")
