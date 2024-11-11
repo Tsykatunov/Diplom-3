@@ -3,8 +3,9 @@ from .base_page import BasePage
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
-from selenium.webdriver.common.keys import Keys
-from locators.locators import OrdersFeedPageLocators, MainPageLocators
+from locators.locators import OrdersFeedPageLocators
+from selenium.common.exceptions import NoSuchElementException, ElementClickInterceptedException, TimeoutException
+from locators.locators import MainPageLocators
 
 class OrdersFeedPage(BasePage):
     @allure.step("Проверка отображения текста 'Лента заказов'")
@@ -17,41 +18,19 @@ class OrdersFeedPage(BasePage):
 
     @allure.step('Клик по первому заказу в ленте')
     def click_first_order(self):
-        first_order = WebDriverWait(self.driver, 10).until(
-            EC.element_to_be_clickable(OrdersFeedPageLocators.FIRST_ORDER)
-        )
+        first_order = self.wait_for_element_to_be_clickable(OrdersFeedPageLocators.FIRST_ORDER)
         first_order.click()
         
     @allure.step('Проверка отображения модального окна с деталями заказа')
     def is_order_details_modal_visible(self):
-        WebDriverWait(self.driver, 5).until(
-                EC.presence_of_element_located(OrdersFeedPageLocators.ORDER_DETAILS_MODAL)
-            )
+        self.wait_for_element(OrdersFeedPageLocators.ORDER_DETAILS_MODAL)
         return True
         
-    @allure.step("Закрытие модального окна")
-    def close_order_modal(self):
-        WebDriverWait(self.driver, 5).until(
-                EC.presence_of_element_located(MainPageLocators.ORDER_START)
-            )
-        WebDriverWait(self.driver, 5).until(
-                EC.presence_of_element_located(MainPageLocators.ORDER_WAIT)
-            )
-        self.driver.find_element(By.TAG_NAME, 'body').send_keys(Keys.ESCAPE)
-        WebDriverWait(self.driver, 5).until(
-            EC.invisibility_of_element_located(MainPageLocators.ORDER_START)
-        )
-        WebDriverWait(self.driver, 5).until(
-            EC.invisibility_of_element_located(MainPageLocators.ORDER_WAIT)
-        )
-
     @allure.step('Проверка наличия заказа в ленте')
     def is_order_in_feed(self, order_number):
-        order_element = WebDriverWait(self.driver, 10).until(
-            EC.presence_of_element_located(
-                (By.XPATH, f"//*[contains(text(), '{order_number}')]")
-                )
-            )
+        order_element = self.wait_for_element(
+            (By.XPATH, f"//*[contains(text(), '{order_number}')]")
+        )
         print(f"Found order: {order_element.text}")
         return True
     
@@ -70,3 +49,20 @@ class OrdersFeedPage(BasePage):
         self.find_element(OrdersFeedPageLocators.ORDERS_FEED_TEXT)
         order_elements = self.driver.find_elements(*OrdersFeedPageLocators.ORDER_NUMBERS)
         return any(order_number in order.text.strip() for order in order_elements)
+
+    @allure.step('Закрытие модального окна заказа')
+    def close_order_modal(self):
+        try:
+            close_button = self.wait_for_element_to_be_clickable(MainPageLocators.MODAL_CLOSE_BUTTON, timeout=10)
+            if close_button.is_displayed():
+                close_button.click()
+                WebDriverWait(self.driver, 3).until(
+                    EC.invisibility_of_element_located(MainPageLocators.MODAL_CLOSE_BUTTON)
+                )
+        except TimeoutException:
+            print("Timeout while waiting for the close button to be clickable.")
+        except NoSuchElementException:
+            print("Close button not found in modal.")
+        except ElementClickInterceptedException:
+            print("Element click intercepted, trying JavaScript click.")
+            self.execute_script("arguments[0].click();", close_button)

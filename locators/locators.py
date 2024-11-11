@@ -15,6 +15,7 @@ class MainPageLocators:
     ORDER_START = (By.XPATH, "//*[text()='Ваш заказ начали готовить']")
     ORDER_WAIT = (By.XPATH, "//*[text()='Дождитесь готовности на орбитальной станции']")
     ORDER_NUMBER_TEXT = (By.CSS_SELECTOR, "h2[class*='Modal_modal__title']")
+    MODAL_OVERLAY = (By.CLASS_NAME, "Modal_modal_overlay__x2ZCr")
 
 class ProfilePageLocators:
     ORDERS_HISTORY = (By.XPATH, "//a[text()='История заказов']")

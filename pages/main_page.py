@@ -2,10 +2,7 @@ import allure
 from .base_page import BasePage
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.by import By
-from selenium.webdriver.common.action_chains import ActionChains
 from locators.locators import MainPageLocators
-import time
 
 class MainPage(BasePage):
     @allure.step("Открытие главной страницы")
@@ -29,10 +26,10 @@ class MainPage(BasePage):
         
     @allure.step("Закрытие модального окна")
     def close_modal(self):
-        WebDriverWait(self.driver, 50).until(
+        close_button = WebDriverWait(self.driver, 10).until(
             EC.element_to_be_clickable(MainPageLocators.MODAL_CLOSE_BUTTON)
         )
-        self.driver.find_element(*MainPageLocators.MODAL_CLOSE_BUTTON).click()
+        close_button.click()
         
     @allure.step("Переход в личный кабинет")
     def go_to_profile(self):
@@ -40,13 +37,9 @@ class MainPage(BasePage):
         
     @allure.step("Клик по ингредиенту")
     def click_ingredient(self):
-            WebDriverWait(self.driver, 10).until(
-                EC.presence_of_element_located((By.XPATH, "//h1[text()='Соберите бургер']"))
-            )
-            ingredient = WebDriverWait(self.driver, 10).until(
-                EC.element_to_be_clickable(MainPageLocators.INGREDIENT)
-            )
-            ingredient.click()
+        self.wait_for_element(MainPageLocators.MAKE_A_BURGER_TEXT)
+        ingredient = self.wait_for_element_to_be_clickable(MainPageLocators.INGREDIENT)
+        ingredient.click()
     
     @allure.step("Проверка некликабельности ингредиента под модальным окном")
     def is_ingredient_clickable(self):
@@ -62,61 +55,47 @@ class MainPage(BasePage):
         
     @allure.step("Перетаскивание ингредиента в конструктор")
     def drag_ingredient_to_constructor(self):
-        WebDriverWait(self.driver, 10).until(
-            EC.presence_of_all_elements_located((By.CSS_SELECTOR, "[class^='BurgerIngredient_ingredient__']"))
-        )
-        browser_name = self.driver.capabilities['browserName'].lower()
-        
-        if browser_name == 'firefox':
-            ingredients = self.driver.find_elements(*MainPageLocators.INGREDIENT)
-            constructor = self.driver.find_element(*MainPageLocators.CONSTRUCTOR_TARGET)
-            self.driver.execute_script("arguments[0].scrollIntoView(true);", ingredients[0])
-            self.driver.execute_script("""
-                function simulateDragDrop(sourceElement, targetElement) {
-                    const MOUSE_EVENTS = ['mousedown', 'mousemove', 'mouseup'];
-                    const DRAG_EVENTS = ['dragstart', 'drag', 'dragenter', 'dragover', 'dragleave', 'drop', 'dragend'];
-                    
-                    function createEvent(eventName) {
-                        const event = document.createEvent("CustomEvent");
-                        event.initCustomEvent(eventName, true, true, null);
-                        event.dataTransfer = {
-                            data: {},
-                            setData: function(type, val) {
-                                this.data[type] = val;
-                            },
-                            getData: function(type) {
-                                return this.data[type];
-                            }
-                        };
-                        return event;
-                    }
-
-                    MOUSE_EVENTS.forEach(eventName => {
-                        const event = createEvent(eventName);
-                        sourceElement.dispatchEvent(event);
-                        targetElement.dispatchEvent(event);
-                    });
-
-                    DRAG_EVENTS.forEach(eventName => {
-                        const event = createEvent(eventName);
-                        if (eventName === 'dragstart' || eventName === 'drag' || eventName === 'dragend') {
-                            sourceElement.dispatchEvent(event);
-                        } else {
-                            targetElement.dispatchEvent(event);
+        self.wait_for_element(MainPageLocators.INGREDIENT)
+        ingredients = self.find_elements(MainPageLocators.INGREDIENT)
+        constructor = self.find_element(MainPageLocators.CONSTRUCTOR_TARGET)
+        self.scroll_into_view(ingredients[0])
+        self.execute_script("""
+            function simulateDragDrop(sourceElement, targetElement) {
+                const MOUSE_EVENTS = ['mousedown', 'mousemove', 'mouseup'];
+                const DRAG_EVENTS = ['dragstart', 'drag', 'dragenter', 'dragover', 'dragleave', 'drop', 'dragend'];
+                
+                function createEvent(eventName) {
+                    const event = document.createEvent("CustomEvent");
+                    event.initCustomEvent(eventName, true, true, null);
+                    event.dataTransfer = {
+                        data: {},
+                        setData: function(type, val) {
+                            this.data[type] = val;
+                        },
+                        getData: function(type) {
+                            return this.data[type];
                         }
-                    });
+                    };
+                    return event;
                 }
-                simulateDragDrop(arguments[0], arguments[1]);
-            """, ingredients[0], constructor)
-        else:
-            source = self.driver.find_element(*MainPageLocators.INGREDIENT)
-            target = self.driver.find_element(*MainPageLocators.CONSTRUCTOR_TARGET)
-            
-            actions = ActionChains(self.driver)
-            actions.drag_and_drop(source, target).perform()
-            WebDriverWait(self.driver, 5).until(
-                lambda x: self.get_ingredient_counter() > 0
-            )
+
+                MOUSE_EVENTS.forEach(eventName => {
+                    const event = createEvent(eventName);
+                    sourceElement.dispatchEvent(event);
+                    targetElement.dispatchEvent(event);
+                });
+
+                DRAG_EVENTS.forEach(eventName => {
+                    const event = createEvent(eventName);
+                    if (eventName === 'dragstart' || eventName === 'drag' || eventName === 'dragend') {
+                        sourceElement.dispatchEvent(event);
+                    } else {
+                        targetElement.dispatchEvent(event);
+                    }
+                });
+            }
+            simulateDragDrop(arguments[0], arguments[1]);
+        """, ingredients[0], constructor)
 
     @allure.step('Клик по кнопке входа в аккаунт')
     def click_login_button(self):
@@ -128,14 +107,14 @@ class MainPage(BasePage):
             EC.presence_of_element_located(MainPageLocators.ORDER_BUTTON)
         )
         self.driver.execute_script("arguments[0].scrollIntoView(true);", order_button)
-        modal_overlay = self.driver.find_element(By.CLASS_NAME, "Modal_modal_overlay__x2ZCr")
+        modal_overlay = self.driver.find_element(*MainPageLocators.MODAL_OVERLAY)
         if modal_overlay.is_displayed():
             close_button = WebDriverWait(self.driver, 3).until(
-                EC.element_to_be_clickable((By.CLASS_NAME, "Modal_modal__close__TnseK"))
+                EC.element_to_be_clickable(*MainPageLocators.MODAL_CLOSE_BUTTON)
             )
             close_button.click()
             WebDriverWait(self.driver, 3).until(
-                EC.invisibility_of_element_located((By.CLASS_NAME, "Modal_modal_overlay__x2ZCr"))
+                EC.invisibility_of_element_located(*MainPageLocators.MODAL_OVERLAY)
             )
         order_button = WebDriverWait(self.driver, 10).until(
             EC.element_to_be_clickable(MainPageLocators.ORDER_BUTTON)
@@ -146,10 +125,6 @@ class MainPage(BasePage):
             self.driver.execute_script("arguments[0].click();", order_button)
         else:
             order_button.click()
-        
-        WebDriverWait(self.driver, 5).until(
-            EC.presence_of_element_located((By.CLASS_NAME, "Modal_modal__contentBox__sCy8X"))
-        )
         
     @allure.step("Проверка создания заказа")
     def is_order_created(self):
@@ -181,5 +156,5 @@ class MainPage(BasePage):
     @allure.step('Проверка добавления ингредиента в конструктор')
     def verify_ingredient_added(self):
         return WebDriverWait(self.driver, 5).until(
-            EC.presence_of_element_located((By.CSS_SELECTOR, ".BurgerConstructor_basket__29Cd7 .constructor-element"))
+            EC.presence_of_element_located(MainPageLocators.CONSTRUCTOR_TARGET)
         )
