@@ -1,9 +1,7 @@
 import allure
+import pytest
 from pages.main_page import MainPage
-from pages.login_page import LoginPage
 from pages.orders_feed_page import OrdersFeedPage
-from selenium.webdriver.support.ui import WebDriverWait
-
 class TestMainFunctionality:
 
     @allure.title('Проверка перехода в конструктор')
@@ -44,23 +42,14 @@ class TestMainFunctionality:
         initial_count = main_page.get_ingredient_counter()
         main_page.drag_ingredient_to_constructor()
         
-        # Проверяем, что ингредиент действительно добавлен
-        assert main_page.verify_ingredient_added() is not None, "Ингредиент не был добавлен в конструктор"
+        assert main_page.verify_ingredient_added() is not None
         
         new_count = main_page.get_ingredient_counter()
-        assert new_count > initial_count, f"Счетчик не увеличился: было {initial_count}, стало {new_count}"
+        assert new_count > initial_count
 
     @allure.title('Проверка оформления заказа')
-    def test_place_order(self, driver, random_user, api_client):
-        api_client.create_user(**random_user)
-        driver.get("https://stellarburgers.nomoreparties.site/login")
-        login_page = LoginPage(driver)
-        login_page.set_email(random_user["email"])
-        login_page.set_password(random_user["password"])
-        login_page.click_login_button()
-        WebDriverWait(driver, 5).until(
-            lambda x: "login" not in x.current_url
-        )
+    @pytest.mark.usefixtures("setup")
+    def test_place_order(self, driver):
         main_page = MainPage(driver)
         main_page.open()
         main_page.drag_ingredient_to_constructor()
