@@ -1,5 +1,4 @@
 import allure
-from selenium.webdriver.support.wait import WebDriverWait
 from pages.main_page import MainPage
 from pages.login_page import LoginPage
 from pages.forgot_password_page import ForgotPasswordPage
@@ -19,9 +18,6 @@ class TestPasswordRecovery:
         login_page = LoginPage(driver)
         login_page.open("/login")
         login_page.click_forgot_password_link()
-        WebDriverWait(driver, 10).until(
-            lambda x: "forgot-password" in x.current_url
-        )
         assert "forgot-password" in driver.current_url
 
     @allure.title('Проверка перехода на страницу "восстановления пароля"')
@@ -30,9 +26,6 @@ class TestPasswordRecovery:
         forgot_page.open("/forgot-password")
         forgot_page.set_email(self.email)
         forgot_page.click_recover_button()
-        WebDriverWait(driver, 10).until(
-            lambda x: "reset-password" in x.current_url
-        )
         assert "reset-password" in driver.current_url
 
     @allure.title('Проверка переключения видимости пароля')
@@ -42,15 +35,9 @@ class TestPasswordRecovery:
         main_page.click_login_button()
         login_page = LoginPage(driver)
         login_page.click_forgot_password_link()
-        WebDriverWait(driver, 10).until(
-            lambda x: "forgot-password" in x.current_url
-        )
         forgot_page = ForgotPasswordPage(driver)
         forgot_page.set_email("test@example.com")
         forgot_page.click_recover_button()
-        WebDriverWait(driver, 10).until(
-            lambda x: "reset-password" in x.current_url
-        )
         reset_page = ResetPasswordPage(driver)
         new_password = "NewTestPassword123"
         reset_page.set_password(new_password)

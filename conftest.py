@@ -5,7 +5,8 @@ from pages.login_page import LoginPage
 from utils.helpers import generate_timestamp, random_string, random_password
 from utils.api_client import ApiClient
 from pages.login_page import LoginPage
-from selenium.webdriver.support.ui import WebDriverWait
+from locators.locators import MainPageLocators
+
 @pytest.fixture
 def random_user():
     timestamp = generate_timestamp()
@@ -44,15 +45,6 @@ def driver(request):
             driver.quit()
 
 @pytest.fixture
-def logged_in_driver(driver, random_user, api_client):
-    api_client.create_user(**random_user)
-    driver.get("https://stellarburgers.nomoreparties.site/login")
-    login_page = LoginPage(driver)
-    login_page.login(random_user["email"], random_user["password"])
-    
-    return driver
-
-@pytest.fixture
 def setup(driver, random_user, api_client):
     api_client.create_user(**random_user)
     driver.get("https://stellarburgers.nomoreparties.site/login")
@@ -60,6 +52,7 @@ def setup(driver, random_user, api_client):
     login_page.set_email(random_user["email"])
     login_page.set_password(random_user["password"])
     login_page.click_login_button()
-    WebDriverWait(driver, 5).until(
-        lambda x: "login" not in x.current_url
-    )
+    for _ in range(10):
+        if driver.find_elements(*MainPageLocators.ORDER_BUTTON):
+            return
+    raise Exception("Не удалось выполнить вход в систему, кнопка заказа не найдена.")

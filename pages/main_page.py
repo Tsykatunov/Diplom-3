@@ -26,9 +26,7 @@ class MainPage(BasePage):
         
     @allure.step("Закрытие модального окна")
     def close_modal(self):
-        close_button = WebDriverWait(self.driver, 10).until(
-            EC.element_to_be_clickable(MainPageLocators.MODAL_CLOSE_BUTTON)
-        )
+        close_button = self.find_element(MainPageLocators.MODAL_CLOSE_BUTTON)
         close_button.click()
         
     @allure.step("Переход в личный кабинет")

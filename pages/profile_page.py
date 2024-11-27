@@ -1,8 +1,6 @@
 import allure
 from .base_page import BasePage
 from locators.locators import ProfilePageLocators, MainPageLocators
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
 
 class ProfilePage(BasePage):
     @allure.step("Нажатие кнопки выхода")
@@ -23,7 +21,5 @@ class ProfilePage(BasePage):
         
     @allure.step('Получение номера последнего заказа')
     def get_last_order_number(self):
-        last_order_number = WebDriverWait(self.driver, 10).until(
-            EC.presence_of_element_located(ProfilePageLocators.LAST_ORDER_NUMBER)
-        )
+        last_order_number = self.find_element(ProfilePageLocators.LAST_ORDER_NUMBER)
         return last_order_number.text.split('\n')[0].replace('#', '')

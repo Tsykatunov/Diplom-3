@@ -1,7 +1,5 @@
 import allure
 from .base_page import BasePage
-from selenium.webdriver.support.wait import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from locators.locators import OrdersFeedPageLocators
 from selenium.common.exceptions import NoSuchElementException, ElementClickInterceptedException, TimeoutException
@@ -36,12 +34,12 @@ class OrdersFeedPage(BasePage):
     
     @allure.step('Получение количества заказов в ленте')
     def get_total_orders_count(self):
-        total_orders_element = self.find_element(OrdersFeedPageLocators.TOTAL_ORDERS_COUNT)
+        total_orders_element = self.wait_for_element(OrdersFeedPageLocators.TOTAL_ORDERS_COUNT)
         return int(total_orders_element.text)
     
     @allure.step('Получение количества заказов за сегодня')
     def get_today_orders_count(self):
-        today_orders_element = self.find_element(OrdersFeedPageLocators.TODAY_ORDERS_COUNT)
+        today_orders_element = self.wait_for_element(OrdersFeedPageLocators.TODAY_ORDERS_COUNT)
         return int(today_orders_element.text)
     
     @allure.step('Проверка наличия заказа в разделе "В работе"')
@@ -56,9 +54,7 @@ class OrdersFeedPage(BasePage):
             close_button = self.wait_for_element_to_be_clickable(MainPageLocators.MODAL_CLOSE_BUTTON, timeout=10)
             if close_button.is_displayed():
                 close_button.click()
-                WebDriverWait(self.driver, 3).until(
-                    EC.invisibility_of_element_located(MainPageLocators.MODAL_CLOSE_BUTTON)
-                )
+                self.wait_for_element(MainPageLocators.MODAL_CLOSE_BUTTON, timeout=3)
         except TimeoutException:
             print("Timeout while waiting for the close button to be clickable.")
         except NoSuchElementException:
