@@ -8,8 +8,9 @@ class ResetPasswordPage(BasePage):
     @allure.step('Ввод нового пароля')
     def set_password(self, password):
         password_input = self.find_element(ResetPasswordPageLocators.PASSWORD_INPUT)
-        password_input.clear()
-        password_input.send_keys(password)
+        if password_input.get_attribute('type') != 'password':
+            self.click_element(ResetPasswordPageLocators.PASSWORD_VISIBILITY_TOGGLE)
+        self.enter_text(ResetPasswordPageLocators.PASSWORD_INPUT, password)
 
     @allure.step('Переключение видимости пароля')
     def toggle_password_visibility(self):

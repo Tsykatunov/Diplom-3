@@ -14,13 +14,14 @@ class MainPageLocators:
     ORDER_BUTTON = (By.XPATH, "//button[text()='Оформить заказ']")
     ORDER_START = (By.XPATH, "//*[text()='Ваш заказ начали готовить']")
     ORDER_WAIT = (By.XPATH, "//*[text()='Дождитесь готовности на орбитальной станции']")
-    ORDER_NUMBER_TEXT = (By.CSS_SELECTOR, "h2[class*='Modal_modal__title']")
+    ORDER_NUMBER_TEXT = (By.XPATH, "//h2[contains(@class, 'text_type_digits-large')]")
     MODAL_OVERLAY = (By.CLASS_NAME, "Modal_modal_overlay__x2ZCr")
 
 class ProfilePageLocators:
     ORDERS_HISTORY = (By.XPATH, "//a[text()='История заказов']")
     LOGOUT_BUTTON = (By.XPATH, "//button[text()='Выход']")
     LAST_ORDER_NUMBER = (By.CSS_SELECTOR, "ul[class*='OrderHistory_profileList'] li:last-child")
+    MODAL_OVERLAY = (By.CLASS_NAME, "Modal_modal_overlay__x2ZCr")
 
 class LoginPageLocators:
     EMAIL_INPUT = (By.NAME, "name")
@@ -43,3 +44,5 @@ class OrdersFeedPageLocators:
     TODAY_ORDERS_COUNT = (By.XPATH, "//p[text()='Выполнено за сегодня:']/following-sibling::p[contains(@class, 'text_type_digits-large')]")
     ORDER_NUMBERS = (By.CSS_SELECTOR, "li.text.text_type_digits-default.mb-2")
     ORDER_DETAILS_MODAL = (By.CSS_SELECTOR, "p.text.text_type_main-medium.mb-8")
+    MODAL_CLOSE_BUTTON = (By.CSS_SELECTOR, "button.Modal_modal__close_modified__3V5XS.Modal_modal__close__TnseK")
+    ORDER_BY_NUMBER = (By.XPATH, "//*[contains(text(), '{}')]")

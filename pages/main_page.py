@@ -1,8 +1,7 @@
 import allure
 from .base_page import BasePage
-from selenium.webdriver.support.wait import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
 from locators.locators import MainPageLocators
+from selenium.common.exceptions import NoSuchElementException, ElementNotInteractableException
 
 class MainPage(BasePage):
     @allure.step("Открытие главной страницы")
@@ -19,10 +18,11 @@ class MainPage(BasePage):
         
     @allure.step("Проверка видимости модального окна")
     def is_modal_visible(self):
-        modal = WebDriverWait(self.driver, 10).until(
-            EC.visibility_of_element_located(MainPageLocators.INGREDIENT_DETAILS)
-            )
-        return True
+        try:
+            modal = self.find_element(MainPageLocators.INGREDIENT_DETAILS)
+            return modal.is_displayed()
+        except NoSuchElementException:
+            return False
         
     @allure.step("Закрытие модального окна")
     def close_modal(self):
@@ -35,20 +35,24 @@ class MainPage(BasePage):
         
     @allure.step("Клик по ингредиенту")
     def click_ingredient(self):
-        self.wait_for_element(MainPageLocators.MAKE_A_BURGER_TEXT)
-        ingredient = self.wait_for_element_to_be_clickable(MainPageLocators.INGREDIENT)
-        ingredient.click()
+        try:
+            self.find_element(MainPageLocators.MAKE_A_BURGER_TEXT)
+            ingredient = self.find_element(MainPageLocators.INGREDIENT)
+            ingredient.click()
+        except NoSuchElementException:
+            raise Exception("Ингредиент не найден")
     
     @allure.step("Проверка некликабельности ингредиента под модальным окном")
     def is_ingredient_clickable(self):
-        WebDriverWait(self.driver, 5).until(
-            EC.element_to_be_clickable(MainPageLocators.INGREDIENT)
-            )
-        return True 
+        try:
+            ingredient = self.find_element(MainPageLocators.INGREDIENT)
+            return ingredient.is_enabled() and ingredient.is_displayed()
+        except NoSuchElementException:
+            return False
                     
     @allure.step("Получение значения счетчика ингредиента")
     def get_ingredient_counter(self):
-        counter = self.driver.find_element(*MainPageLocators.INGREDIENT_COUNTER)
+        counter = self.find_element(MainPageLocators.INGREDIENT_COUNTER)
         return int(counter.text) if counter.text else 0
         
     @allure.step("Перетаскивание ингредиента в конструктор")
@@ -101,58 +105,57 @@ class MainPage(BasePage):
         
     @allure.step('Клик по кнопке "Оформить заказ"')
     def click_order_button(self):
-        order_button = WebDriverWait(self.driver, 10).until(
-            EC.presence_of_element_located(MainPageLocators.ORDER_BUTTON)
-        )
-        self.driver.execute_script("arguments[0].scrollIntoView(true);", order_button)
-        modal_overlay = self.driver.find_element(*MainPageLocators.MODAL_OVERLAY)
-        if modal_overlay.is_displayed():
-            close_button = WebDriverWait(self.driver, 3).until(
-                EC.element_to_be_clickable(*MainPageLocators.MODAL_CLOSE_BUTTON)
-            )
-            close_button.click()
-            WebDriverWait(self.driver, 3).until(
-                EC.invisibility_of_element_located(*MainPageLocators.MODAL_OVERLAY)
-            )
-        order_button = WebDriverWait(self.driver, 10).until(
-            EC.element_to_be_clickable(MainPageLocators.ORDER_BUTTON)
-        )
-        browser_name = self.driver.capabilities['browserName'].lower()
-        
-        if browser_name == 'firefox':
-            self.driver.execute_script("arguments[0].click();", order_button)
-        else:
-            order_button.click()
-        
+        try:
+            order_button = self.find_element(MainPageLocators.ORDER_BUTTON)
+            self.scroll_into_view(order_button)
+            
+            try:
+                modal_overlay = self.find_element(MainPageLocators.MODAL_OVERLAY)
+                if modal_overlay.is_displayed():
+                    close_button = self.find_element(MainPageLocators.MODAL_CLOSE_BUTTON)
+                    close_button.click()
+            except NoSuchElementException:
+                pass
+
+            browser_name = self.driver.capabilities['browserName'].lower()
+            if browser_name == 'firefox':
+                self.execute_script("arguments[0].click();", order_button)
+            else:
+                order_button.click()
+        except (NoSuchElementException, ElementNotInteractableException):
+            raise Exception("Кнопка заказа не найдена или недоступна для клика")
+
     @allure.step("Проверка создания заказа")
     def is_order_created(self):
-        WebDriverWait(self.driver, 5).until(
-            EC.presence_of_element_located(MainPageLocators.ORDER_START)
-        )
-        WebDriverWait(self.driver, 5).until(
-            EC.presence_of_element_located(MainPageLocators.ORDER_WAIT)
-        )
-        return True
+        try:
+            self.find_element(MainPageLocators.ORDER_START)
+            self.find_element(MainPageLocators.ORDER_WAIT)
+            return True
+        except NoSuchElementException:
+            return False
 
     @allure.step("Проверка видимости конструктора")
     def is_constructor_page(self):
-        element = WebDriverWait(self.driver, 10).until(
-                EC.visibility_of_element_located(MainPageLocators.MAKE_A_BURGER_TEXT)
-            )
-        return element.is_displayed()
-    
+        try:
+            element = self.find_element(MainPageLocators.MAKE_A_BURGER_TEXT)
+            return element.is_displayed()
+        except NoSuchElementException:
+            return False
+
     @allure.step('Получение номера заказа из модального окна')
     def get_order_number(self):
-        def check_order_number(driver):
-            element = driver.find_element(*MainPageLocators.ORDER_NUMBER_TEXT)
-            number = element.text.strip()
-            return element if number and number != '9999' else False
-
-        order_element = WebDriverWait(self.driver, 30).until(check_order_number)
-        return order_element.text.strip()
+        return self.wait_for_text_change(MainPageLocators.ORDER_NUMBER_TEXT, '9999')
 
     @allure.step('Проверка добавления ингредиента в конструктор')
     def verify_ingredient_added(self):
-        return WebDriverWait(self.driver, 5).until(
-            EC.presence_of_element_located(MainPageLocators.CONSTRUCTOR_TARGET)
-        )
+        try:
+            return self.find_element(MainPageLocators.CONSTRUCTOR_TARGET)
+        except NoSuchElementException:
+            return False
+
+    @allure.step('Убеждаемся, что логин прошёл успешно')
+    def login_success(self):
+        try:
+            return self.find_element(MainPageLocators.ORDER_BUTTON)
+        except NoSuchElementException:
+            return False

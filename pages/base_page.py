@@ -3,6 +3,7 @@ from locators.locators import MainPageLocators
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchElementException, ElementClickInterceptedException
+import time
 
 class BasePage:
     def __init__(self, driver):
@@ -66,8 +67,7 @@ class BasePage:
                         EC.invisibility_of_element_located(*MainPageLocators.MODAL_OVERLAY)
                     )
         except NoSuchElementException:
-            print("No modals found on the page.")
-
+            pass
 
     def is_element_visible(self, locator, timeout=10):
         WebDriverWait(self.driver, timeout).until(
@@ -101,3 +101,25 @@ class BasePage:
         return WebDriverWait(self.driver, timeout).until(
             EC.element_to_be_clickable(locator)
         )
+
+    def wait_for_text_change(self, locator, unwanted_text, timeout=10):
+        start_time = time.time()
+        while time.time() - start_time < timeout:
+            try:
+                element = self.wait_for_element_to_be_visible(locator)
+                text = element.text.strip()
+                if text and text != unwanted_text:
+                    return text
+            except:
+                continue
+        raise Exception(f"Текст элемента не изменился с '{unwanted_text}' за {timeout} секунд")
+
+    def wait_for_url_change(self, expected_url_part, timeout=10):
+        start_time = time.time()
+        while time.time() - start_time < timeout:
+            if expected_url_part in self.driver.current_url:
+                return True
+        return False
+
+    def get_current_url(self):
+        return self.driver.current_url

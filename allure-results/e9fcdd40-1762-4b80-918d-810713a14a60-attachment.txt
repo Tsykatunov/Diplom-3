@@ -1,2 +1,0 @@
-No modals found on the page.
-Element click intercepted, trying JavaScript click.
