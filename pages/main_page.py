@@ -19,14 +19,14 @@ class MainPage(BasePage):
     @allure.step("Проверка видимости модального окна")
     def is_modal_visible(self):
         try:
-            modal = self.find_element(MainPageLocators.INGREDIENT_DETAILS)
+            modal = self.wait_for_element(MainPageLocators.INGREDIENT_DETAILS)
             return modal.is_displayed()
         except NoSuchElementException:
             return False
         
     @allure.step("Закрытие модального окна")
     def close_modal(self):
-        close_button = self.find_element(MainPageLocators.MODAL_CLOSE_BUTTON)
+        close_button = self.wait_for_element(MainPageLocators.MODAL_CLOSE_BUTTON)
         close_button.click()
         
     @allure.step("Переход в личный кабинет")
@@ -36,8 +36,8 @@ class MainPage(BasePage):
     @allure.step("Клик по ингредиенту")
     def click_ingredient(self):
         try:
-            self.find_element(MainPageLocators.MAKE_A_BURGER_TEXT)
-            ingredient = self.find_element(MainPageLocators.INGREDIENT)
+            self.wait_for_element(MainPageLocators.MAKE_A_BURGER_TEXT)
+            ingredient = self.wait_for_element(MainPageLocators.INGREDIENT)
             ingredient.click()
         except NoSuchElementException:
             raise Exception("Ингредиент не найден")
@@ -45,21 +45,21 @@ class MainPage(BasePage):
     @allure.step("Проверка некликабельности ингредиента под модальным окном")
     def is_ingredient_clickable(self):
         try:
-            ingredient = self.find_element(MainPageLocators.INGREDIENT)
+            ingredient = self.wait_for_element(MainPageLocators.INGREDIENT)
             return ingredient.is_enabled() and ingredient.is_displayed()
         except NoSuchElementException:
             return False
                     
     @allure.step("Получение значения счетчика ингредиента")
     def get_ingredient_counter(self):
-        counter = self.find_element(MainPageLocators.INGREDIENT_COUNTER)
+        counter = self.wait_for_element(MainPageLocators.INGREDIENT_COUNTER)
         return int(counter.text) if counter.text else 0
         
     @allure.step("Перетаскивание ингредиента в конструктор")
     def drag_ingredient_to_constructor(self):
         self.wait_for_element(MainPageLocators.INGREDIENT)
         ingredients = self.find_elements(MainPageLocators.INGREDIENT)
-        constructor = self.find_element(MainPageLocators.CONSTRUCTOR_TARGET)
+        constructor = self.wait_for_element(MainPageLocators.CONSTRUCTOR_TARGET)
         self.scroll_into_view(ingredients[0])
         self.execute_script("""
             function simulateDragDrop(sourceElement, targetElement) {
@@ -106,13 +106,13 @@ class MainPage(BasePage):
     @allure.step('Клик по кнопке "Оформить заказ"')
     def click_order_button(self):
         try:
-            order_button = self.find_element(MainPageLocators.ORDER_BUTTON)
+            order_button = self.wait_for_element(MainPageLocators.ORDER_BUTTON)
             self.scroll_into_view(order_button)
             
             try:
-                modal_overlay = self.find_element(MainPageLocators.MODAL_OVERLAY)
+                modal_overlay = self.wait_for_element(MainPageLocators.MODAL_OVERLAY)
                 if modal_overlay.is_displayed():
-                    close_button = self.find_element(MainPageLocators.MODAL_CLOSE_BUTTON)
+                    close_button = self.wait_for_element(MainPageLocators.MODAL_CLOSE_BUTTON)
                     close_button.click()
             except NoSuchElementException:
                 pass
@@ -128,8 +128,8 @@ class MainPage(BasePage):
     @allure.step("Проверка создания заказа")
     def is_order_created(self):
         try:
-            self.find_element(MainPageLocators.ORDER_START)
-            self.find_element(MainPageLocators.ORDER_WAIT)
+            self.wait_for_element(MainPageLocators.ORDER_START)
+            self.wait_for_element(MainPageLocators.ORDER_WAIT)
             return True
         except NoSuchElementException:
             return False
@@ -137,7 +137,7 @@ class MainPage(BasePage):
     @allure.step("Проверка видимости конструктора")
     def is_constructor_page(self):
         try:
-            element = self.find_element(MainPageLocators.MAKE_A_BURGER_TEXT)
+            element = self.wait_for_element(MainPageLocators.MAKE_A_BURGER_TEXT)
             return element.is_displayed()
         except NoSuchElementException:
             return False
@@ -149,13 +149,13 @@ class MainPage(BasePage):
     @allure.step('Проверка добавления ингредиента в конструктор')
     def verify_ingredient_added(self):
         try:
-            return self.find_element(MainPageLocators.CONSTRUCTOR_TARGET)
+            return self.wait_for_element(MainPageLocators.CONSTRUCTOR_TARGET)
         except NoSuchElementException:
             return False
 
     @allure.step('Убеждаемся, что логин прошёл успешно')
     def login_success(self):
         try:
-            return self.find_element(MainPageLocators.ORDER_BUTTON)
+            return self.wait_for_element(MainPageLocators.ORDER_BUTTON)
         except NoSuchElementException:
             return False

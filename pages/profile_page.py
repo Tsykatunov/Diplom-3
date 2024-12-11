@@ -11,7 +11,7 @@ class ProfilePage(BasePage):
     def click_orders_history(self): 
         orders_history_button = self.wait_for_element_to_be_clickable(ProfilePageLocators.ORDERS_HISTORY)
         self.scroll_into_view(orders_history_button)
-        modal = self.find_element(ProfilePageLocators.MODAL_OVERLAY)
+        modal = self.wait_for_element(ProfilePageLocators.MODAL_OVERLAY)
         if modal.is_displayed():
             modal.click()
             self.wait_for_element_to_be_invisible(ProfilePageLocators.MODAL_OVERLAY)
@@ -19,5 +19,5 @@ class ProfilePage(BasePage):
         
     @allure.step('Получение номера последнего заказа')
     def get_last_order_number(self):
-        last_order_number = self.find_element(ProfilePageLocators.LAST_ORDER_NUMBER)
+        last_order_number = self.wait_for_element(ProfilePageLocators.LAST_ORDER_NUMBER)
         return last_order_number.text.split('\n')[0].replace('#', '')

@@ -48,8 +48,7 @@ class TestMainFunctionality:
         assert new_count > initial_count
 
     @allure.title('Проверка оформления заказа')
-    @pytest.mark.usefixtures("setup")
-    def test_place_order(self, driver):
+    def test_place_order(self, driver, setup):
         main_page = MainPage(driver)
         main_page.open()
         main_page.drag_ingredient_to_constructor()

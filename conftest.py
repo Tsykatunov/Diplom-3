@@ -3,18 +3,13 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from pages.login_page import LoginPage
 from pages.main_page import MainPage
-from utils.helpers import generate_timestamp, random_string, random_password
+from utils.helpers import generate_timestamp, random_string, random_password, generate_random_user
 from utils.api_client import ApiClient
 from pages.login_page import LoginPage
 
 @pytest.fixture
 def random_user():
-    timestamp = generate_timestamp()
-    return {
-        "email": f"test{timestamp}@tsykatunov.ru",
-        "password": random_password(),
-        "name": random_string()
-    }
+    return generate_random_user()
 
 @pytest.fixture
 def api_client():

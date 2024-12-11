@@ -11,3 +11,11 @@ def random_string(length=8):
 def random_password(length=10):
     characters = string.ascii_letters + string.digits
     return ''.join(random.choices(characters, k=length)) 
+
+def generate_random_user():
+    timestamp = generate_timestamp()
+    return {
+        "email": f"test{timestamp}@tsykatunov.ru",
+        "password": random_password(),
+        "name": random_string()
+    }

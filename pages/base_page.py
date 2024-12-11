@@ -10,11 +10,6 @@ class BasePage:
         self.driver = driver
         self.base_url = "https://stellarburgers.nomoreparties.site"
         
-    def find_element(self, locator, timeout=10):
-        return WebDriverWait(self.driver, timeout).until(
-            EC.presence_of_element_located(locator)
-        )
-        
     def wait_for_element(self, locator, timeout=10):
         return WebDriverWait(self.driver, timeout).until(
             EC.presence_of_element_located(locator)
@@ -78,9 +73,6 @@ class BasePage:
     def execute_script(self, script, *args):
         return self.driver.execute_script(script, *args)
 
-    def find_element(self, locator):
-        return self.driver.find_element(*locator)
-
     def find_elements(self, locator):
         return self.driver.find_elements(*locator)
 
@@ -95,11 +87,6 @@ class BasePage:
     def wait_for_element_to_be_invisible(self, locator, timeout=10):
         return WebDriverWait(self.driver, timeout).until(
             EC.invisibility_of_element_located(locator)
-        )
-
-    def wait_for_element_to_be_clickable(self, locator, timeout=10):
-        return WebDriverWait(self.driver, timeout).until(
-            EC.element_to_be_clickable(locator)
         )
 
     def wait_for_text_change(self, locator, unwanted_text, timeout=10):
